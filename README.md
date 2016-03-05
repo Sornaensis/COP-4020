@@ -81,6 +81,12 @@ When we have an expression of this form we can reduce it by binding the variable
 (10.10)
 ```
 
+Whenever we are done binding variables we then drop the `head` of the lambda expression, which is everything we had written between the `λ` and `.`. So we simply end up with
+
+```lambda
+10
+```
+
 Another example:
 
 ```lambda
