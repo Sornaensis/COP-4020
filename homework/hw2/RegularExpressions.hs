@@ -130,6 +130,6 @@ main = main' []
                      else case map toLower x of
                             "quit" -> return ()
                             "q"    -> return ()
-                            _      -> putStrLn "Invalid Fload Input"   >> main' xs 
+                            _      -> putStrLn "Invalid Float Input"   >> main' xs 
  
  
