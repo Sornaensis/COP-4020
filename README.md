@@ -9,7 +9,7 @@
 
 This repo is a collection haskell programs and snippets I have written for/during Spring 2016 COP4020, including homework, lecture notes, and random stuff related to the class. Some prolog may show up here and there as well.
 
-I have some haskell and lambda calculus tutorials written up in the [lambda-calc](/labmda-calc) subdirectory. The [Lambda Calculus](#lambda-calculus) is important to understanding functional programming in general, but it is especially relevant to haskell, because haskell is essentially a typed version of lambda calculus.
+I have some haskell and lambda calculus tutorials written up in the [lambda-calc](labmda-calc/) subdirectory. The [Lambda Calculus](#lambda-calculus) is important to understanding functional programming in general, but it is especially relevant to haskell, because haskell is essentially a typed version of lambda calculus.
 
 ## Packages
 Some of the programs I have written use third-party haskell libraries to accomplish certain things that I would otherwise have to implement all over again. 
@@ -136,11 +136,15 @@ ghci> compose (+ 3) (/2) 10
 8.0  -- | Haskell has a concept of Fractional vs Integral values, we can ignore that for lambda calc, which is typeless
 ```
 
+In haskell, when we declare a function that takes arguments we are really declaring a series of functions, that each take a single argument. For instance the `compose` function defined above ends up looking like this:
+
 ```haskell
 compose f g x = f (g x)
 compose = \f g x -> f (g x)
 compose = (\f -> (\g -> (\x -> f (g x))))
 ```
+
+So keeping in ming the rules of reduction, we can see why this works with an example:
 
 ```haskell
 ghci> compose (+ 3) (/ 2) 10
