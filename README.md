@@ -10,7 +10,8 @@ In your favorite $shell
 
 ```bash
 $ cabal update
-$ cabal install $packagename```
+$ cabal install $packagename
+```
 
 *Windows Users*
 
@@ -18,5 +19,6 @@ Press `Windows+R` and type `cmd.exe` and then
     
 ```cmd
 C:\> cabal update
-C:\> cabal install <package name>```
+C:\> cabal install <package name>
+```
 
