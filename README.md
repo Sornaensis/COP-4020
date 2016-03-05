@@ -9,7 +9,7 @@
 
 This repo is a collection haskell programs and snippets I have written for/during Spring 2016 COP4020, including homework, lecture notes, and random stuff related to the class. Some prolog may show up here and there as well.
 
-I have some haskell and lambda calculus tutorials written up in the [lambda-calc](/labmda-calc/) subdirectory. The [Lambda Calculus](#lambda-calculus) is important to understanding functional programming in general, but it is especially relevant to haskell, because haskell is essentially a typed version of lambda calculus.
+I have some haskell and lambda calculus tutorials written up in the [lambda-calc](/labmda-calc) subdirectory. The [Lambda Calculus](#lambda-calculus) is important to understanding functional programming in general, but it is especially relevant to haskell, because haskell is essentially a typed version of lambda calculus.
 
 ## Packages
 Some of the programs I have written use third-party haskell libraries to accomplish certain things that I would otherwise have to implement all over again. 
@@ -35,6 +35,78 @@ C:\> cabal install <package name>
 ```
 
 ## Lambda Calculus
+
+The basis for the functional programming paradigm and so FP languages (Haskell, Javascript, F#, OcaML, ML, Scala, Clojure, Scheme, Common LISP, (Every other kinda LISP), etc.) is the notion of functions as first-class entities by themselves, in the mathematical sense of the word 'function'. That is, a function gives some output for a given input, but each input can only have a single output. A function cannot return multiple values for a single input. In haskell, which is PURELY functional, functions may not produce any side-effects, or alter the state of the program at any time. In haskell, side effects are put into what is called the `IO Monad`. What that means isn't really important right now. The point is that if you define a funtion in haskell, for instance
+
+```haskell
+max a b = if a > b then a else b
+```
+
+It must ALWAYS return the same output for a given input. The function will never give you a different output. At the same time any function defined in haskell cannot introduce side-effects. A side-effect for instance would be calling this C-function:
+
+```C
+int shiftRight(int* val) {
+    if(*val == 0) {
+        return 0;
+    }
+    *val = *val >> 4;
+
+    return 1;
+}
+```
+
+Notice that this function modified the value stored at the address you pass to it. That's called having a side-effect. In haskell functions only evaluate to a new value. These are two important ideas of the lambda calculus, where functions are applied to arguments and then reduced. Nothing is changed. It is very similar to mathematical notation you may have seen before, e.g. `f(x) = x²`. When you determine the value of `f(3)`, you are binding the name `x` to the value `3` and producing a result. You cannot change the value that you put into the function-- `3` is still `3`, you merely _receive a new value_. Another core concept to functional programming.
+
+#### Lambdas
+
+So, what the heck is a lambda (λ) anyway? Well [lambda calculus](https://en.wikipedia.org/wiki/Lambda_calculus) was invented by a guy named Alonzo Church and it is used as a way of denoting computation mathematically. 
+
+It works like this:
+
+```λx.x```
+
+The `λ` indicates the start of a lambda expression. Everything between the `λ` and the `.` are the variables that this particular lambda takes. In this case we only take one, call it x. This term is equivalent to the mathematical expression `f(x)=x`. We put in a value, and get that same value back. It is called the `identity function`.
+
+When we apply a function to an argument we write it like this:
+
+```(λx.x) 10```
+
+When we have an expression of this form we can reduce it by binding the variables to the values we are applying the function to, in this case `x` is bound to `10`. We then re-write as
+
+```(10.10)``
+
+By replacing the occurrences of `x` in the body with `10`. For the rest of this page I'll write lambdas in haskell syntax:
+
+```haskell
+ghci> let f x = x
+--- | Equivalent to
+ghci> let f = \x -> x
+```
+
+In haskell a lambda is just like any function and can take multiple values
+
+```haskell
+ghci> let s = \x y -> x --- | Drop second parameter
+```
+
+#### Reduction
+
+When working with functions there is a concept of reduction which is a lot like evaluating an expression in mathematics. If you are given the statement `3*4/2+12` you reduce this expression to the _value_ `18`. The same concept applies here.
+
+```haskell
+--- | Our function on the left, each argument on the right
+ghci> (\a b c d -> a**2 + 2*b - c / d) 10 5 87 4
+88.25
+```
+
+In haskell we also have the concept of passing functions into other functions
+
+```haskell
+--- | Our function on the left, each argument on the right
+--- | Now, notice that we are applying a function `b` to the argument `c`
+ghci> (\a b c d -> a**2 + b c / d) 10 ((-) 5) 87 4
+79.5
+```
 
 ```haskell
 ghci> let compose f g x = f (g x)
