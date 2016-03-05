@@ -3,7 +3,7 @@
 ### Contents
 - [What is this?](#what-is-this)
 - [Packages](#packages)
-- - [Installing Packages](#installing-packages)
+··- [Installing Packages](#installing-packages)
 
 ### What is this?
 
