@@ -83,7 +83,8 @@ When we have an expression of this form we can reduce it by binding the variable
 
 Another example:
 
-```(λz.(λx.z+x)) 4 5
+```lambda
+(λz.(λx.z+x)) 4 5
 Apply to first argument, 4
 (λx.z+x) 5
 Then second
