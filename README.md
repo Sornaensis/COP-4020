@@ -63,17 +63,34 @@ So, what the heck is a lambda (λ) anyway? Well [lambda calculus](https://en.wik
 
 It works like this:
 
-```λx.x```
+```lambda
+λx.x
+```
 
 The `λ` indicates the start of a lambda expression. Everything between the `λ` and the `.` are the variables that this particular lambda takes. In this case we only take one, call it x. This term is equivalent to the mathematical expression `f(x)=x`. We put in a value, and get that same value back. It is called the `identity function`.
 
 When we apply a function to an argument we write it like this:
 
-```(λx.x) 10```
+```lambda
+(λx.x) 10
+```
 
 When we have an expression of this form we can reduce it by binding the variables to the values we are applying the function to, in this case `x` is bound to `10`. We then re-write as
 
-```(10.10)``
+```lambda
+(10.10)
+```
+
+Another example:
+
+```(λz.(λx.z+x)) 4 5
+Apply to first argument, 4
+(λx.z+x) 5
+Then second
+(4+5)
+```
+
+[More Examples](/lambda-calc/LambdaCalc.hs)
 
 By replacing the occurrences of `x` in the body with `10`. For the rest of this page I'll write lambdas in haskell syntax:
 
@@ -107,6 +124,10 @@ In haskell we also have the concept of passing functions into other functions
 ghci> (\a b c d -> a**2 + b c / d) 10 ((-) 5) 87 4
 79.5
 ```
+
+We can write `((-) 5)` as the lambda `(\x -> 5 - x)`
+
+More passing functions around:
 
 ```haskell
 ghci> let compose f g x = f (g x)
