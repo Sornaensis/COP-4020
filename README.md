@@ -204,7 +204,13 @@ Using typeclasses in haskell we can easily write every single sort, each of whic
 bubbleSort :: Ord a => [a] -> [a]
 bubbleSort []  = []
 bubbleSort [x] = [x]
-bubbleSort xs  = bubble' 0
+bubbleSort xs  = bubbleSort' 0 xs
+              where
+              bubbleSort' n xs | n < length xs = bubbleSort' b (bubble xs')
+                               | otherwise     = xs
+              bubble' (x0:x1:xs) = if x0 < x1 then x0 : (bubble' (x1:xs)) else x1 : (bubble (x0:xs))
+              bubble' xs         = xs
+
 ```
 #### Insertion Sort
 ```haskell
