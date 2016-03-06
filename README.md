@@ -4,6 +4,7 @@
 + [What is this?](#what-is-this)
 + [Packages](#packages)
 + [Lambda Calculus](#lambda-calculus)
++ [Every Sort](#every-sort)
 
 ## What is this?
 
@@ -22,7 +23,7 @@ It can be installed by following the short guide below:
 
 ### Installing Packages
 ##### Linux/OSX/BSD Users
-In your favorite $shell
+In your favorite `$shell`
 ```sh
 $ cabal update
 $ cabal install <package name>
@@ -50,7 +51,6 @@ int shiftRight(int* val) {
         return 0;
     }
     *val = *val >> 4;
-
     return 1;
 }
 ```
@@ -193,3 +193,26 @@ So if we look at the first expression here we can turn each into a lambda and fi
 
 So you can see we reduced this expression into an arithmetic expression, which is easy to evaluate of course and get `8`.
 
+## Every Sort
+
+Using typeclasses in haskell we can easily write every single sort, each of which can sort a list of any type of data that `instance`s the typeclass `Ord`
+
+[More info on Ord](https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Ord.html)
+
+#### Bubble Sort
+```haskell
+bubble :: Ord a => [a] -> [a]
+bubble = foldr (\x y -> bubble' (x:y)) []
+       where
+       bubble' []            = []
+       bubble' [x]           = [x]
+       bubble' xt@(x0:x1:xs) = if x0 < x1 
+                                then xt 
+                                else x1 : bubble (x0:xs)
+```
+
+#### Insertion Sort
+#### Merge Sort
+#### Quick Sort
+
+### Our own data to Sort
