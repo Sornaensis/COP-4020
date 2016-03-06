@@ -258,6 +258,28 @@ treeToList (Node y l r)     = treeToList l ++ [y] ++ treeToList r
 treeSort :: Ord a => [a] -> [a]
 treeSort = treeToList . foldl addToTree Nil
 ```
+#### Heap Sort
+```haskell
+data Heap a = Leaf | Branch a (Heap a) (Heap a) deriving Show
+
+addToHeap :: Ord a => Heap a -> a -> Heap a
+addToHeap Leaf x         = Branch Node x Nil Nil
+addToHeap (Node y l r) x = let sizer = heapCount r
+                               sizel = heapCount l
+                           in if sizel > sizer then Node y l (addToHeap x) else Node y (addToHeap x) r
+
+> siftUp :: Ord a => Heap a -> Heap a
+> siftUp Leaf                 = Leaf
+> siftUp (Node x Leaf Leaf)   = Node x Leaf Leaf
+
+heapCount :: Heap a -> Int
+heapCount Leaf         = 0
+heapCount (Node _ l r) = 1 + heapCount l + heapCount r
+
+
+heapSort :: Ord a => [a] -> Heap a -- [a]
+heapSort = foldl addToHeap Leaf
+```
 
 #### Our own data to Sort
 
