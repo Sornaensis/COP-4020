@@ -203,10 +203,9 @@ Using typeclasses in haskell we can easily write every single sort, each of whic
 ```haskell
 bubbleSort :: Ord a => [a] -> [a]
 bubbleSort []  = []
-bubbleSort [x] = [x]
 bubbleSort xs  = bubbleSort' 0 xs
               where
-              bubbleSort' n xs | n < length xs = bubbleSort' (n+1) (bubble xs)
+              bubbleSort' n xs | n < length xs = bubbleSort' (n+1) (bubble' xs)
                                | otherwise     = xs
               bubble' (x0:x1:xs) = if x0 < x1 then x0 : (bubble' (x1:xs)) else x1 : (bubble' (x0:xs))
               bubble' xs         = xs
@@ -237,5 +236,12 @@ mergeSort xt@(_:_:_) = let l = length xt `div` 2
 mergeSort x          = x
 ```
 #### Quick Sort
+```haskell
+quickSort :: Ord a => [a] -> [a]
+quickSort []     = []
+quickSort (x:xs) = let gte = quickSort [z | z <- xs, z >= x]
+                       lt = quickSort [z | z <- xs, z < x]
+                    in gte ++ [x] ++ lt
+```
 
 #### Our own data to Sort
