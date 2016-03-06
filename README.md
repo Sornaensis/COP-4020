@@ -241,7 +241,7 @@ quickSort :: Ord a => [a] -> [a]
 quickSort []     = []
 quickSort (x:xs) = let gte = quickSort [z | z <- xs, z >= x]
                        lt = quickSort [z | z <- xs, z < x]
-                    in gte ++ [x] ++ lt
+                    in lt ++ [x] ++ gte
 ```
 
 #### Our own data to Sort
