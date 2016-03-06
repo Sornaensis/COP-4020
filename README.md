@@ -214,7 +214,7 @@ bubbleSort xs  = bubbleSort' 0 xs
 #### Insertion Sort
 ```haskell
 insertSort :: Ord a => [a] -> [a]
-insertSort = foldr (\x y -> insert x y)) []
+insertSort = foldr (\x y -> insert x y) []
           where
           insert y []        = [y]
           insert y xt@(x:xs) = if y < x 
@@ -243,5 +243,21 @@ quickSort (x:xs) = let gte = quickSort [z | z <- xs, z >= x]
                        lt = quickSort [z | z <- xs, z < x]
                     in lt ++ [x] ++ gte
 ```
+#### Tree Sort
+```haskell
+data Tree a = Nil | Node a (Tree a) (Tree a)
+
+addToTree :: Ord a => Tree a -> a -> Tree a
+addToTree Nil x          = Node x Nil Nil
+addToTree (Node y l r) x = if x < y then Node y (addToTree l x) r else Node y l (addToTree r x)
+
+treeToList :: Tree a -> [a]
+treeToList Nil              = []
+treeToList (Node y l r)     = treeToList l ++ [y] ++ treeToList r
+
+treeSort :: Ord a => [a] -> [a]
+treeSort = treeToList . foldl addToTree Nil
+```
 
 #### Our own data to Sort
+
