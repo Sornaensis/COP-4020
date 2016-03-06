@@ -228,7 +228,7 @@ mergeSort :: Ord a => [a] -> [a]
 mergeSort xt@(_:_:_) = let l = length xt `div` 2
                            fs = take l xt
                            ts = drop l xt
-                       merge (mergeSort fs) (mergeSort ts)
+                       in merge (mergeSort fs) (mergeSort ts)
                      where
                      merge [] []               = []
                      merge xs []               = xs
