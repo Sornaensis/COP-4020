@@ -199,19 +199,19 @@ Using typeclasses in haskell we can easily write every single sort, each of whic
 
 [More info on Ord](https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Ord.html)
 
-#### Bubble Sort
+#### Insertion Sort
 ```haskell
-bubble :: Ord a => [a] -> [a]
-bubble = foldr (\x y -> bubble' (x:y)) []
-       where
-       bubble' []            = []
-       bubble' [x]           = [x]
-       bubble' xt@(x0:x1:xs) = if x0 < x1 
-                                then xt 
-                                else x1 : bubble (x0:xs)
+insertSort :: Ord a => [a] -> [a]
+insertSort = foldr (\x y -> insert (x:y)) []
+          where
+          insert []            = []
+          insert [x]           = [x]
+          insert xt@(x0:x1:xs) = if x0 < x1 
+                                   then xt 
+                                   else x1 : insert (x0:xs)
 ```
 
-#### Insertion Sort
+#### Bubble Sort
 #### Merge Sort
 #### Quick Sort
 
