@@ -206,9 +206,9 @@ bubbleSort []  = []
 bubbleSort [x] = [x]
 bubbleSort xs  = bubbleSort' 0 xs
               where
-              bubbleSort' n xs | n < length xs = bubbleSort' b (bubble xs')
+              bubbleSort' n xs | n < length xs = bubbleSort' (n+1) (bubble xs)
                                | otherwise     = xs
-              bubble' (x0:x1:xs) = if x0 < x1 then x0 : (bubble' (x1:xs)) else x1 : (bubble (x0:xs))
+              bubble' (x0:x1:xs) = if x0 < x1 then x0 : (bubble' (x1:xs)) else x1 : (bubble' (x0:xs))
               bubble' xs         = xs
 
 ```
@@ -223,6 +223,19 @@ insertSort = foldr (\x y -> insert x y)) []
                                    else x : insert y xs
 ```
 #### Merge Sort
+```haskell
+mergeSort :: Ord a => [a] -> [a]
+mergeSort xt@(_:_:_) = let l = length xt `div` 2
+                           fs = take l xt
+                           ts = drop l xt
+                       merge (mergeSort fs) (mergeSort ts)
+                     where
+                     merge [] []               = []
+                     merge xs []               = xs
+                     merge [] ys               = ys
+                     merge xt@(x:xs) yt@(y:ys) = if x < y then x : merge xs yt else y : merge xt ys
+mergeSort x          = x
+```
 #### Quick Sort
 
 #### Our own data to Sort
