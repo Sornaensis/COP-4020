@@ -208,7 +208,9 @@ If we want to be able to sort our own data we need to first have some data we ca
 --- | Derive Eq since each constructor is just equal to itself (Rock == Rock) etc
 data RPS = Rock | Paper | Scissor deriving (Show, Eq)
 ```
-Using typeclasses we can trivially setup circular relationships:
+The minimal complete defintion requires either the function `compare` or `(<=)`. We'll use `compare`. This function will take two RPS values and determine whether the first is `GT`, `LT` or `EQ` to the second. These are the constructors for the data type `Ordering`: [Ordering](https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Ord.html#t:Ordering) 
+
+Using this function we can trivially setup circular relationships: (Rock beats Scissors, Scissors beats Paper, Paper beats Rock)
 ```haskell
 --- | We can ignore EQ for simplicity. We just say each move is greater than itself
 instance Ord RPS where
@@ -217,7 +219,7 @@ instance Ord RPS where
     compare Scissor Rock  = LT
     compare _       _     = GT
 ```
-Now if we want to declare a winner of Rock Paper Scissors we just grab the max:
+Now if we want to declare a winner of Rock Paper Scissors we just grab the max, or declare a tie:
 ```haskell
 --- | Explicitly handle a tie scenario declaratively
 data Outcome = Winner RPS | Draw deriving Show
