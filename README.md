@@ -260,24 +260,24 @@ treeSort = treeToList . foldl addToTree Nil
 ```
 #### Heap Sort
 ```haskell
-data Heap a = Leaf | Node a (Heap a) (Heap a) deriving Show
+data Heap a = Leaf | Node a (Int, Heap a) (Int, Heap a) deriving Show
 
 addToHeap :: Ord a => Heap a -> a -> Heap a
-addToHeap Leaf x         = Node x Leaf Leaf
-addToHeap (Node y l r) x = let sizer = heapCount r
-                               sizel = heapCount l
-                           in if sizel > sizer 
-                                then Node y l (addToHeap r x) 
-                                else Node y (addToHeap l x) r
+addToHeap Leaf x                           = Node x (0, Leaf) (0, Leaf)
+addToHeap (Node y (sizel, l) (sizer, r)) x = 
+    if sizel > sizer 
+     then Node y (sizel, l) (sizer+1, addToHeap r x) 
+     else Node y (sizel+1, addToHeap l x) (sizer, r)
 
 lastElem :: Heap a -> (a, Heap a)
-lastElem (Node x Leaf Leaf) = (x, Leaf)
-lastElem (Node x l r)       = if heapCount l > heapCount r
-                               then let (z, lt) = lastElem l
-                                    in (z, Node x lt r)
-                               else let (z, rt) = lastElem r
-                                    in (z, Node x l rt)
-                                    
+lastElem (Node x (0,Leaf) (0,Leaf))      = (x, Leaf)
+lastElem (Node x (sizel, l) (sizer, r))  = 
+    if sizel > sizer
+     then let (z, lt) = lastElem l
+          in (z, Node x (sizel-1, lt) (sizer, r))
+     else let (z, rt) = lastElem r
+          in (z, Node x (sizel, l) (sizer-1, rt))
+
 heapToList :: Ord a => Heap a -> [a]
 heapToList Leaf            = []
 heapToList nt@(Node x l r) = let (n, t) = lastElem nt
@@ -289,36 +289,31 @@ swap (Node x l r) y = Node y l r
 
 siftUp :: Ord a => Heap a -> Heap a
 siftUp Leaf                 = Leaf
-siftUp (Node x lt@(Node y _ _) rt@(Node z _ _)) =
-                if y < x 
-                  then siftUp (Node y (swap lt x) rt)
-                  else if z < x
-                        then siftUp (Node z lt (swap rt x))
-                        else let lt'@(Node y' _ _) = siftUp lt 
-                                 rt'@(Node z' _ _) = siftUp rt
-                             in if y' /= y || z' /= z
-                                 then siftUp (Node x lt' rt')
-                                 else Node x lt rt
-siftUp (Node x lt@(Node y _ _) Leaf) =
-                if y < x 
-                  then siftUp (Node y (swap lt x) Leaf)
-                  else let lt'@(Node y' _ _) = siftUp lt
-                       in if y' /= y
-                           then siftUp (Node x lt' Leaf)
-                           else Node x lt Leaf
-siftUp (Node x Leaf rt@(Node z _ _)) =
-                if z < x 
-                   then siftUp (Node z Leaf (swap rt x))
-                   else let rt'@(Node z' _ _) = siftUp rt
-                        in if z' /= z 
-                            then siftUp (Node x Leaf rt')
-                            else Node x Leaf rt
-siftUp (Node x Leaf Leaf)   = Node x Leaf Leaf
-
-heapCount :: Heap a -> Int
-heapCount Leaf         = 0
-heapCount (Node _ l r) = 1 + heapCount l + heapCount r
-
+siftUp (Node x (l,lt@(Node y _ _)) (r,rt@(Node z _ _))) =
+    if y < x 
+     then siftUp (Node y (l,(swap lt x)) (r,rt))
+     else if z < x
+           then siftUp (Node z (l,lt) (r,(swap rt x)))
+           else let lt'@(Node y' _ _) = siftUp lt 
+                    rt'@(Node z' _ _) = siftUp rt
+                in if y' /= y || z' /= z
+                    then siftUp (Node x (l,lt') (r,rt'))
+                    else Node x (l,lt) (r,rt)
+siftUp (Node x (l,lt@(Node y _ _)) r@(0,Leaf)) =
+    if y < x 
+     then siftUp (Node y (l,(swap lt x)) r)
+     else let lt'@(Node y' _ _) = siftUp lt
+          in if y' /= y
+             then siftUp (Node x (l,lt') r)
+             else Node x (l,lt) r
+siftUp (Node x l@(0,Leaf) (r,rt@(Node z _ _))) =
+    if z < x 
+     then siftUp (Node z l (r,(swap rt x)))
+     else let rt'@(Node z' _ _) = siftUp rt
+          in if z' /= z 
+              then siftUp (Node x l (r,rt'))
+              else Node x l (r,rt)
+siftUp x@(Node _ (0,Leaf) (0,Leaf))   = x
 
 heapSort :: Ord a => [a] -> [a]
 heapSort = heapToList . siftUp . foldl addToHeap Leaf
