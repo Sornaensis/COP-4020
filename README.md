@@ -238,6 +238,7 @@ instance Eq (Priority a) where
     (Med _)        == (Med _)           = True
     (High _)       == (High _)          = True
     (RealTime x _) == (RealTime y _)    = x == y
+    _              == _                 = False
 
 --- | Now we can describe an ordering for them
 --- | We'll describe HIGHER priority as LESS THAN so when we sort in ascending order, the
