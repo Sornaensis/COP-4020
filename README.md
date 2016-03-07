@@ -269,19 +269,20 @@ addToHeap (Node y (sizel, l) (sizer, r)) x =
      then Node y (sizel, l) (sizer+1, addToHeap r x) 
      else Node y (sizel+1, addToHeap l x) (sizer, r)
 
-lastElem :: Heap a -> (a, Heap a)
-lastElem (Node x (0,Leaf) (0,Leaf))      = (x, Leaf)
-lastElem (Node x (sizel, l) (sizer, r))  = 
-    if sizel > sizer
-     then let (z, lt) = lastElem l
-          in (z, Node x (sizel-1, lt) (sizer, r))
-     else let (z, rt) = lastElem r
-          in (z, Node x (sizel, l) (sizer-1, rt))
+removeTopElem :: Ord a => Heap a -> Heap a
+removeTopElem (Node _ (0,Leaf) (0,Leaf)) = Leaf
+removeTopElem (Node _ (l,lt@(Node y _ _)) rt@(0,Leaf)) =
+        Node y (l-1, removeTopElem lt) rt
+removeTopElem (Node _ lt@(0,Leaf) (r,rt@(Node z _ _))) =
+        Node z lt (r-1, removeTopElem rt)
+removeTopElem (Node _ (l, lt@(Node y _ _)) (r,rt@(Node z _ _))) 
+    | y < z     = Node y (l-1, removeTopElem lt) (r,rt) 
+    | otherwise = Node z (l,lt) (r-1,removeTopElem rt) 
 
 heapToList :: Ord a => Heap a -> [a]
 heapToList Leaf            = []
-heapToList nt@(Node x l r) = let (n, t) = lastElem nt
-                             in x : heapToList (siftUp (swap t n))
+heapToList nt@(Node x l r) = x : heapToList (removeTopElem nt)
+
 
 swap :: Heap a -> a -> Heap a
 swap Leaf _ = Leaf
@@ -289,26 +290,24 @@ swap (Node x l r) y = Node y l r
 
 siftUp :: Ord a => Heap a -> Heap a
 siftUp Leaf                 = Leaf
-siftUp (Node x (l,lt@(Node y _ _)) (r,rt@(Node z _ _))) =
-    if y < x 
-     then siftUp (Node y (l,(swap lt x)) (r,rt))
-     else if z < x
-           then siftUp (Node z (l,lt) (r,(swap rt x)))
-           else let lt'@(Node y' _ _) = siftUp lt 
-                    rt'@(Node z' _ _) = siftUp rt
-                in if y' /= y || z' /= z
-                    then siftUp (Node x (l,lt') (r,rt'))
-                    else Node x (l,lt) (r,rt)
+siftUp (Node x (l,lt@(Node y _ _)) (r,rt@(Node z _ _))) 
+    | y < x     = siftUp (Node y (l, swap lt x) (r,rt))
+    | z < x     = siftUp (Node z (l,lt) (r, swap rt x))
+    | otherwise = let lt'@(Node y' _ _) = siftUp lt 
+                      rt'@(Node z' _ _) = siftUp rt
+                   in if y' /= y || z' /= z
+                       then siftUp (Node x (l,lt') (r,rt'))
+                       else Node x (l,lt) (r,rt)
 siftUp (Node x (l,lt@(Node y _ _)) r@(0,Leaf)) =
     if y < x 
-     then siftUp (Node y (l,(swap lt x)) r)
+     then siftUp (Node y (l, swap lt x) r)
      else let lt'@(Node y' _ _) = siftUp lt
           in if y' /= y
              then siftUp (Node x (l,lt') r)
              else Node x (l,lt) r
 siftUp (Node x l@(0,Leaf) (r,rt@(Node z _ _))) =
     if z < x 
-     then siftUp (Node z l (r,(swap rt x)))
+     then siftUp (Node z l (r, swap rt x))
      else let rt'@(Node z' _ _) = siftUp rt
           in if z' /= z 
               then siftUp (Node x l (r,rt'))
