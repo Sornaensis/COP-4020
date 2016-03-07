@@ -195,9 +195,68 @@ So you can see we reduced this expression into an arithmetic expression, which i
 
 ## Every Sort
 
+[The Sorts](#bubble-sort)
+
 Using typeclasses in haskell we can easily write every single sort, each of which can sort a list of any type of data that `instance`s the typeclass `Ord`
 
 [More info on Ord](https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Ord.html)
+
+#### Our own data to Sort
+
+If we want to be able to sort our own data we need to first have some data we can describe orderings for:
+```haskell
+--- | Derive Eq since each constructor is just equal to itself (Rock == Rock) etc
+data RPS = Rock | Paper | Scissor deriving (Show, Eq)
+```
+Using typeclasses we can trivially setup circular relationships:
+```haskell
+--- | We can ignore EQ for simplicity. We just say each move is greater than itself
+instance Ord RPS where
+    compare Rock Paper    = LT
+    compare Paper Scissor = LT
+    compare Scissor Rock  = LT
+    compare _       _     = GT
+```
+Now if we want to declare a winner of Rock Paper Scissors we just grab the max:
+```haskell
+--- | Explicitly handle a tie scenario declaratively
+data Outcome = Winner RPS | Draw deriving Show
+
+--- | Throw! Can have a winner or be a draw
+throw :: RPS -> RPS -> Outcome
+throw m n | n == m    = Draw
+          | otherwise = Winner $ max m n
+```
+
+Other examples:
+
+```haskell
+--- | We want to describe priority in a system so we construct a polymorphic type
+data Priority a = Low a | Med a | High a | RealTime Int a deriving Show
+
+--- | We need to describe what priorities are equivalent first
+instance Eq (Priority a) where
+    (Low _)        == (Low _)           = True
+    (Med _)        == (Med _)           = True
+    (High _)       == (High _)          = True
+    (RealTime x _) == (RealTime y _)    = x == y
+
+--- | Now we can describe an ordering for them
+--- | We'll describe HIGHER priority as LESS THAN so when we sort in ascending order, the
+--- | highest priority comes first
+instance Ord (Priority a) where
+    compare (Low _) (Med _)               = GT
+    compare (Med _) (High _)              = GT
+    compare (Low _) (High _)              = GT
+    compare (RealTime x _) (RealTime y _) = compare y x
+    compare _ (RealTime _ _)              = GT
+    compare _ _                           = LT
+```
+Now you can simply do
+```haskell
+ghci> mergeSort [Low "p1", RealTime 5 "p3", RealTime 10 "p76", Med "p12", High "p54", High "p31", Low "p12", RealTime 8 "p97"]
+ghci> [RealTime 10 "p76", RealTime 8 "p97", RealTime 5 "p3", High "p54", High "p31", Med "p12", Low "p1", Low "p12"]
+```
 
 #### Bubble Sort
 ```haskell
@@ -259,6 +318,7 @@ treeSort :: Ord a => [a] -> [a]
 treeSort = treeToList . foldl addToTree Nil
 ```
 #### Heap Sort
+With a literal heap
 ```haskell
 data Heap a = Leaf | Node a (Int, Heap a) (Int, Heap a) deriving Show
 
@@ -282,7 +342,6 @@ removeTopElem (Node _ (l, lt@(Node y _ _)) (r,rt@(Node z _ _)))
 heapToList :: Ord a => Heap a -> [a]
 heapToList Leaf            = []
 heapToList nt@(Node x l r) = x : heapToList (removeTopElem nt)
-
 
 swap :: Heap a -> a -> Heap a
 swap Leaf _ = Leaf
@@ -317,6 +376,3 @@ siftUp x@(Node _ (0,Leaf) (0,Leaf))   = x
 heapSort :: Ord a => [a] -> [a]
 heapSort = heapToList . siftUp . foldl addToHeap Leaf
 ```
-
-#### Our own data to Sort
-
