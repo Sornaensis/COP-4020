@@ -195,13 +195,13 @@ So you can see we reduced this expression into an arithmetic expression, which i
 
 ## Every Sort
 
-[The Sorts](#bubble-sort)
+### [The Sorts](#bubble-sort)
+
+#### Our own data to Sort
 
 Using typeclasses in haskell we can easily write every single sort, each of which can sort a list of any type of data that `instance`s the typeclass `Ord`
 
 [More info on Ord](https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Ord.html)
-
-#### Our own data to Sort
 
 If we want to be able to sort our own data we need to first have some data we can describe orderings for:
 ```haskell
@@ -227,9 +227,7 @@ throw :: RPS -> RPS -> Outcome
 throw m n | n == m    = Draw
           | otherwise = Winner $ max m n
 ```
-
 Other examples:
-
 ```haskell
 --- | We want to describe priority in a system so we construct a polymorphic type
 data Priority a = Low a | Med a | High a | RealTime Int a deriving Show
@@ -255,8 +253,9 @@ instance Ord (Priority a) where
 Now you can simply do
 ```haskell
 ghci> mergeSort [Low "p1", RealTime 5 "p3", RealTime 10 "p76", Med "p12", High "p54", High "p31", Low "p12", RealTime 8 "p97"]
-ghci> [RealTime 10 "p76", RealTime 8 "p97", RealTime 5 "p3", High "p54", High "p31", Med "p12", Low "p1", Low "p12"]
+[RealTime 10 "p76", RealTime 8 "p97", RealTime 5 "p3", High "p54", High "p31", Med "p12", Low "p1", Low "p12"]
 ```
+And this works for any sort of the form I have here.
 
 #### Bubble Sort
 ```haskell
