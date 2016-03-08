@@ -436,5 +436,8 @@ bogoSort' gen a xs@(_:_:_)   = let (n, gen')      = randomR (0, a) gen :: (Int, 
                            merge 1 (x:xs) (y:ys) = x:y:merge 1 xs ys
 
 main :: IO ()
-main = newStdGen >>= \gen -> print $ bogoSort gen [87,12,-5,8,-43,76,6,78,-3]
+main = getLine >>= \line -> case (reads line :: [([Int], String)]) of
+                                    []        -> main
+                                    ((x,_):_) -> newStdGen >>= \g -> print (bogoSort g x) >> main
+--- | main = newStdGen >>= \gen -> print $ bogoSort gen [87,12,-5,8,-43,76,6,78,-3]
 ```
