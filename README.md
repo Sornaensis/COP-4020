@@ -208,7 +208,7 @@ If we want to be able to sort our own data we need to first have some data we ca
 --- | Derive Eq since each constructor is just equal to itself (Rock == Rock) etc
 data RPS = Rock | Paper | Scissor deriving (Show, Eq)
 ```
-The minimal complete defintion requires either the function `compare` or `(<=)`. We'll use `compare`. This function will take two RPS values and determine whether the first is `GT`, `LT` or `EQ` to the second. These are the constructors for the data type `Ordering`: [Ordering](https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Ord.html#t:Ordering) 
+The minimal complete defintion requires either the function `compare` or `(<=)`. We'll use `compare`. This function will take two RPS values and determine whether the first is `GT`, `LT` or `EQ` to the second. These are the constructors for the data type `Ordering` ([More info](https://hackage.haskell.org/package/base-4.8.2.0/docs/Data-Ord.html#t:Ordering))
 
 Using this function we can trivially setup circular relationships: (Rock beats Scissors, Scissors beats Paper, Paper beats Rock)
 ```haskell
