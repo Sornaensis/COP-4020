@@ -35,7 +35,9 @@ legalMove (Piece Black Pawn (Position c1 7))  (Position c2 5)   = c1 == c2
 legalMove (Piece Black Pawn (Position c1 r1)) (Position c2 r2)  = c1 == c2 && r1 - 1 == r2 
 legalMove (Piece _ Bishop (Position c1 r1)) (Position c2 r2)    = abs (fromEnum c2 - fromEnum c1) == abs (r2 - r1)
 legalMove (Piece _ Rook (Position c1 r1))   (Position c2 r2)    = (c1 == c2) && (r1 /= r2) || (c1 /= c2) && (r1 == r2)
-legalMove (Piece _ King (Position c1 r1))   (Position c2 r2)    = abs (fromEnum c2 - fromEnum c1) == 1 || abs (r2 - r1) == 1
+legalMove (Piece _ King (Position c1 r1))   (Position c2 r2)    = let mc = abs (fromEnum c2 - fromEnum c1) 
+                                                                      mr = abs (r2 - r1)
+                                                                  in (mc == 1 || mr == 1) && (mc /= 0 || mr /= 0)
 legalMove (Piece _ Knight (Position c1 r1)) (Position c2 r2)    = (abs (fromEnum c2 - fromEnum c1) == 2 && abs (r2 - r1) == 1) ||
                                                                    (abs (fromEnum c2 - fromEnum c1) == 1 && abs (r2 - r1) == 2) 
 legalMove queen@(Piece _ Queen _)  pos                          = legalMove (swapPiece queen Bishop) pos || legalMove (swapPiece queen Rook) pos
