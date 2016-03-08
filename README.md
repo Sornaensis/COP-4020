@@ -92,7 +92,7 @@ Another example:
 ```lambda
 (λz.(λx.z+x)) 4 5
 Apply to first argument, 4
-(λx.z+x) 5
+(λx.4+x) 5
 Then second
 (4+5)
 ```
@@ -403,4 +403,41 @@ siftUp x@(Node _ (0,Leaf) (0,Leaf))   = x
 
 heapSort :: Ord a => [a] -> [a]
 heapSort = heapToList . siftUp . foldl addToHeap Leaf
+```
+#### Bogosort
+```haskell
+import System.Random
+
+bogoSort ::  Ord b => StdGen -> [b] -> [b]
+bogoSort gen xs = let len          = length xs
+                      (gen', sort) = bogoSort' gen len xs
+                  in if sorted sort 
+                      then sort 
+                      else bogoSort gen' sort
+                where 
+                sorted (x:y:xs) = (x <= y) && sorted (y:xs)
+                sorted []       = True
+                sorted [_]      = True
+
+bogoSort' :: Ord b => StdGen -> Int -> [b] -> (StdGen, [b])
+bogoSort' gen   0 xs         = let (_, gen') = random gen :: (Int, StdGen)
+                               in (gen', xs)
+bogoSort' gen   1 xs         = let (_, gen') = random gen :: (Int, StdGen)
+                               in (gen', xs)
+bogoSort' gen a xs@(_:_:_)   = let (n, gen')      = randomR (0, a) gen :: (Int, StdGen)
+                                   (r, gen'')     = randomR (0,1) gen' :: (Int, StdGen)
+                                   (left, right)  = splitAt n xs
+                                   (nGen, sleft)  = bogoSort' gen' n left
+                                   (_   , sright) = bogoSort' gen'' (a-n) right
+                               in (nGen, merge r sleft sright)                           
+                           where
+                           merge :: Int -> [a] -> [a] -> [a]
+                           merge _ [] [] = []
+                           merge _ xs [] = xs
+                           merge _ [] ys = ys
+                           merge 0 (x:xs) (y:ys) = y:x:merge 0 xs ys
+                           merge 1 (x:xs) (y:ys) = x:y:merge 1 xs ys
+
+main :: IO ()
+main = newStdGen >>= \gen -> print $ bogoSort gen [87,12,-5,8,-43,76,6,78,-3]
 ```
