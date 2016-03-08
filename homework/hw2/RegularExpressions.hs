@@ -9,8 +9,8 @@ char :: Char -> RegExp
 char = (==) . return  --- | Monadic injection is more idiomatic and all that jazz
 
 --- | Set fixity levels to avoid lots of redundant brackets/confusing regexes
---- | Basically    e1 <+> e2 <+> e3 <+> (e4 <|> e5 <+> e6) <||> e7 <+> e8    <--- With fixity
---- |           == (e1 <+> e2 <+> e3 <+> (e4 <|> (e5 <+> e6))) <||> (e7 <+> e8)  <--- Without fixity
+--- | Basically    e1 <+> e2 <+> e3 <+> (e4 <|> e5 <+> e6) <|> e7 <+> e8    <--- With fixity
+--- |           == (e1 <+> e2 <+> e3 <+> (e4 <|> (e5 <+> e6))) <|> (e7 <+> e8)  <--- Without fixity
 infixl 0 <|>, |||
 infixl 9 <+>, <*>
 
@@ -94,14 +94,14 @@ number = nonZero <+> many digits <|> char '0' --- | ([1-9][0-9]*|0)
 
 --- | Match floating point numbers
 fractional :: RegExp
-fractional = (char '0' <|> nonZero <+> many digits) <+> char '.' <+> (digits <||> many digits <+> nonZero)
+fractional = (char '0' <|> nonZero <+> many digits) <+> char '.' <+> (digits <|> many digits <+> nonZero)
              --- | (0|[1-9][0-9]*)\.([0-9]|[0-9]*[1-9])
 
 --- | Match either floating point numbers or natural numbers
 --- | Left non-simplified to demonstrate operator precedence
 fractOrNum :: RegExp
 fractOrNum = --- | Match a fractional number
-             (char '0' <|> nonZero <+> many digits) <+> char '.' <+> (digits <||> many digits <+> nonZero)
+             (char '0' <|> nonZero <+> many digits) <+> char '.' <+> (digits <|> many digits <+> nonZero)
              --- | OR
              <|>  
              --- | Match a natural number
