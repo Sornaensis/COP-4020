@@ -59,7 +59,7 @@ Notice that this function modified the value stored at the address you pass to i
 
 #### Lambdas
 
-So, what the heck is a lambda (λ) anyway? Well [lambda calculus](https://en.wikipedia.org/wiki/Lambda_calculus#informal_description) was invented by a guy named [Alonzo Church](https://en.wikipedia.org/wiki/Alonzo_Church) and it is used as a way of denoting computation mathematically. 
+So, what the heck is a lambda (λ) anyway? Well [lambda calculus](https://en.wikipedia.org/wiki/Lambda_calculus#Informal_description) was invented by a guy named [Alonzo Church](https://en.wikipedia.org/wiki/Alonzo_Church) and it is used as a way of denoting computation mathematically. 
 
 It works like this:
 
