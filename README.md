@@ -86,9 +86,9 @@ Whenever we are done binding variables we then drop the `head` of the lambda exp
 ```lambda
 10
 ```
+By replacing the occurrences of `x` in the body with `10`.
 
 Another example:
-
 ```lambda
 (λz.(λx.z+x)) 4 5
 Apply to first argument, 4
@@ -99,12 +99,15 @@ Then second
 
 [More Examples](/lambda-calc/LambdaCalc.hs)
 
-By replacing the occurrences of `x` in the body with `10`. For the rest of this page I'll write lambdas in haskell syntax:
+ For the rest of this page I'll write lambdas in haskell syntax:
 
 ```haskell
-ghci> let f x = x
---- | Equivalent to
-ghci> let f = \x -> x
+λx.x    --- | lambda calc
+\x -> x --- | haskell
+\f x -> (\g -> f (g x))  --- | Nested lambda
+--- | In ghci we can test out these expressions and see what they do
+ghci> (\f x -> (\g -> f (g x))) (+1) 2 (*2) -- | Parens for clarity
+5
 ```
 
 In haskell a lambda is just like any function and can take multiple values
@@ -113,6 +116,29 @@ In haskell a lambda is just like any function and can take multiple values
 ghci> let s = \x y -> x --- | Drop second parameter
 ```
 
+When we define a function we can think of the parameters in terms of creating a lambda expression that the function name is bound to. This is generally a good way to think about haskell functions because of the various ways of expressing partially applied functions.
+```haskell
+ghci> let f x = x
+--- | Equivalent to
+ghci> let f = \x -> x
+--- | Given a function
+ghci> let mix f y z = f z * y
+--- | What is the type of this partial application?
+ghci> :t mix (^3) 2 
+mix (^3) 2 :: Num a => a -> a
+--- | What this means is when we write
+(mix (^3) 2) 
+--- | We have a function that takes a one argument, some number a, and returns another number a
+--- | If we apply this function to a number
+ghci> mix (^3) 2 5
+250
+--- | We produce a result. If we re-write this as a lambda, the meaning is very clear
+ghci> (\f y z -> f z * y) (^3) 2 5
+--- | By omitting the five we see that we get
+ghci> (\z -> (^3) z * 2)
+--- | From the expression 
+(mix (^3) 2)
+```
 #### Reduction
 
 When working with functions there is a concept of reduction which is a lot like evaluating an expression in mathematics. If you are given the statement `3*4/2+12` you reduce this expression to the _value_ `18`. The same concept applies here.
