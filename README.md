@@ -416,14 +416,11 @@ bogoSort gen xs = let len          = length xs
                       else bogoSort gen' sort
                 where 
                 sorted (x:y:xs) = (x <= y) && sorted (y:xs)
-                sorted []       = True
-                sorted [_]      = True
+                sorted _        = True
 
 bogoSort' :: Ord b => StdGen -> Int -> [b] -> (StdGen, [b])
-bogoSort' gen   0 xs         = let (_, gen') = random gen :: (Int, StdGen)
-                               in (gen', xs)
-bogoSort' gen   1 xs         = let (_, gen') = random gen :: (Int, StdGen)
-                               in (gen', xs)
+bogoSort' gen   0 xs         = let (_, gen') = random gen :: (Int, StdGen) in (gen', xs)
+bogoSort' gen   1 xs         = let (_, gen') = random gen :: (Int, StdGen) in (gen', xs)
 bogoSort' gen a xs@(_:_:_)   = let (n, gen')      = randomR (0, a) gen :: (Int, StdGen)
                                    (r, gen'')     = randomR (0,1) gen' :: (Int, StdGen)
                                    (left, right)  = splitAt n xs
