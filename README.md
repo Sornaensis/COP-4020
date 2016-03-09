@@ -431,13 +431,13 @@ bogoSort xs = do gen <- get
 bogoSort' :: Ord a => Int -> [a] -> RState [a]
 bogoSort' 0 xs          = return xs
 bogoSort' 1 xs          = return xs
-bogoSort' a xs@(_:_:_)  = get >>= \gen ->
-                             let (n, gen')      = runState (randR (0, a)) gen
-                                 (r, gen'')     = runState (randR (False, True)) gen
+bogoSort' a xs@(_:_:_)  = get >>= \gen -> put (execState rand gen) >>
+                             let n              = evalState (randR (0, a)) gen
                                  (left, right)  = splitAt n xs
-                                 sleft          = evalState (bogoSort' n left) gen'
-                                 sright         = evalState (bogoSort' (a-n) right) gen''
-                             in put gen'' >> return (merge r sleft sright)
+                                 sleft          = evalState (bogoSort' n left) (execState rand gen)
+                                 sright         = evalState (bogoSort' (a-n) right) (execState rand gen)
+                             in return (merge (evalState (randR (False, True)) gen) sleft sright)
+
 
 merge :: Bool -> [a] -> [a] -> [a]
 merge _ [] [] = []
