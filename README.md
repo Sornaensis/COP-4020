@@ -419,17 +419,16 @@ randR :: Random a => (a, a) -> RState a
 randR r = do g <- get
              let (n, g') = randomR r g in put g' >> return n
 
-bogoSort :: Ord b => StdGen -> [b] -> [b]
-bogoSort gen xs = let len          = length xs
-                      (sort, gen') = runState (bogoSort' len xs) gen
-                  in if sorted sort 
-                      then sort 
-                      else bogoSort gen' sort
+bogoSort :: Ord a => [a] -> RState [a]
+bogoSort xs = do gen <- get
+                 put (execState rand gen)
+                 let sort = evalState (bogoSort' len xs) gen in if sorted sort then return sort else bogoSort xs
                 where 
+                len             = length xs
                 sorted (x:y:xs) = (x <= y) && sorted (y:xs)
                 sorted _        = True
 
-bogoSort' :: Ord b => Int -> [b] -> RState [b]
+bogoSort' :: Ord a => Int -> [a] -> RState [a]
 bogoSort' 0 xs          = get >>= \gen -> put (execState rand gen) >> return xs
 bogoSort' 1 xs          = get >>= \gen -> put (execState rand gen) >> return xs
 bogoSort' a xs@(_:_:_)  = get >>= \gen ->
