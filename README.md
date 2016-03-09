@@ -408,21 +408,26 @@ heapSort = heapToList . siftUp . foldl addToHeap Leaf
 ```haskell
 import System.Random
 import Control.Monad.State
+import Debug.Trace
 
+--- | Curried state monad type for a state type whose state is a random number generator
 type RState = State StdGen
 
+--- | Generate a random number within the state and return the result as our value
 rand :: RState Int
 rand = do g <- get
           let (n, g') = random g :: (Int, StdGen) in put g' >> return n
 
+--- | Polymorphic random number range, since the type of the range can be inferred by the type of the tupe that forms the range
 randR :: Random a => (a, a) -> RState a
 randR r = do g <- get
              let (n, g') = randomR r g in put g' >> return n
 
-bogoSort :: Ord a => [a] -> RState [a]
+--- | Use «trace» to show all the random orderings of the list that we are looking at
+bogoSort :: (Show a, Ord a) => [a] -> RState [a]
 bogoSort xs = do gen <- get
                  put (execState rand gen)
-                 let sort = evalState (bogoSort' len xs) gen in if sorted sort then return sort else bogoSort xs
+                 let sort = evalState (bogoSort' len xs) gen in if sorted sort then return sort else trace (show sort) $ bogoSort xs
                 where 
                 len             = length xs
                 sorted (x:y:xs) = (x <= y) && sorted (y:xs)
@@ -439,6 +444,7 @@ bogoSort' a xs@(_:_:_)  = get >>= \gen0 -> put (execState rand gen0) >> get >>= 
                              in return (merge (evalState (randR (False, True)) gen) sleft sright)
 
 
+--- | Conditional merging
 merge :: Bool -> [a] -> [a] -> [a]
 merge _ [] [] = []
 merge _ xs [] = xs
@@ -446,6 +452,8 @@ merge _ [] ys = ys
 merge t (x:xs) (y:ys) | not t     =  y:x:merge t xs ys
                       | otherwise =  x:y:merge t xs ys
 
+--- | We maintain functional purity by taking a random number generator and passing it on to pure code
+--- | We want as few functions as possible in our programs to be tied up in the IO Monad
 main :: IO ()
 main = getLine >>= \line -> case (reads line :: [([Int], String)]) of
                                     []        -> main
