@@ -17,7 +17,7 @@ deque (Queue (x:xs, ys)) = (x, Queue (xs,ys))
 
 type QVal   = Maybe Int
 type QState = (Queue Int, QVal)
-type QStore = State QState QVal
+type QStore = State QState ()
 
 start :: QState
 start = (empty, Nothing)
@@ -30,15 +30,13 @@ runQueue :: QVal -> QStore
 runQueue Nothing  = 
             do (q, _) <- get
                if isEmpty q 
-                 then return Nothing
+                 then put (q, Nothing)
                  else let (v, q') = deque q 
-                      in do put (q', Just v) 
-                            return (Just v)
+                      in put (q', Just v) 
                
 runQueue (Just x) = 
             do (q, _) <- get
                put (enqueue x q, Nothing)
-               return Nothing
 
 main :: IO ()
 main = qmain start
