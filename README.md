@@ -450,6 +450,6 @@ merge t (x:xs) (y:ys) | not t     =  y:x:merge t xs ys
 main :: IO ()
 main = getLine >>= \line -> case (reads line :: [([Int], String)]) of
                                     []        -> main
-                                    ((x,_):_) -> newStdGen >>= \g -> print (bogoSort g x) >> main
---- | main = newStdGen >>= \gen -> print $ bogoSort gen [87,12,-5,8,-43,76,6,78,-3]
+                                    ((x,_):_) -> newStdGen >>= print . evalState (bogoSort x)
+--- | main = newStdGen >>= print . evalState (bogoSort [87,12,-5,8,-43,76,6,78,-3])
 ```
