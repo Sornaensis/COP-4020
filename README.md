@@ -439,9 +439,9 @@ bogoSort' 1 xs          = return xs
 bogoSort' a xs@(_:_:_)  = get >>= \gen0 -> put (execState rand gen0) >> get >>= \gen ->
                              let n              = evalState (randR (0, a)) gen
                                  (left, right)  = splitAt n xs
-                                 sleft          = evalState (bogoSort' n left) (execState rand gen)
-                                 sright         = evalState (bogoSort' (a-n) right) (execState rand gen)
-                             in return (merge (evalState (randR (False, True)) gen) sleft sright)
+                                 sleft          = evalState (bogoSort' n left) gen
+                                 sright         = evalState (bogoSort' (a-n) right) gen
+                             in return $ merge (evalState (randR (False, True)) gen) sleft sright
 
 
 --- | Conditional merging
