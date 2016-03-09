@@ -407,10 +407,21 @@ heapSort = heapToList . siftUp . foldl addToHeap Leaf
 #### Bogosort
 ```haskell
 import System.Random
+import Control.Monad.State
 
-bogoSort ::  Ord b => StdGen -> [b] -> [b]
+type RState = State StdGen
+
+rand :: RState Int
+rand = do g <- get
+          let (n, g') = random g :: (Int, StdGen) in put g' >> return n
+
+randR :: Random a => (a, a) -> RState a
+randR r = do g <- get
+             let (n, g') = randomR r g in put g' >> return n
+
+bogoSort :: Ord b => StdGen -> [b] -> [b]
 bogoSort gen xs = let len          = length xs
-                      (gen', sort) = bogoSort' gen len xs
+                      (sort, gen') = runState (bogoSort' len xs) gen
                   in if sorted sort 
                       then sort 
                       else bogoSort gen' sort
@@ -418,22 +429,23 @@ bogoSort gen xs = let len          = length xs
                 sorted (x:y:xs) = (x <= y) && sorted (y:xs)
                 sorted _        = True
 
-bogoSort' :: Ord b => StdGen -> Int -> [b] -> (StdGen, [b])
-bogoSort' gen   0 xs         = let (_, gen') = random gen :: (Int, StdGen) in (gen', xs)
-bogoSort' gen   1 xs         = let (_, gen') = random gen :: (Int, StdGen) in (gen', xs)
-bogoSort' gen a xs@(_:_:_)   = let (n, gen')      = randomR (0, a) gen :: (Int, StdGen)
-                                   (r, gen'')     = randomR (0,1) gen' :: (Int, StdGen)
-                                   (left, right)  = splitAt n xs
-                                   (nGen, sleft)  = bogoSort' gen' n left
-                                   (_   , sright) = bogoSort' gen'' (a-n) right
-                               in (nGen, merge r sleft sright)                           
-                           where
-                           merge :: Int -> [a] -> [a] -> [a]
-                           merge _ [] [] = []
-                           merge _ xs [] = xs
-                           merge _ [] ys = ys
-                           merge 0 (x:xs) (y:ys) = y:x:merge 0 xs ys
-                           merge 1 (x:xs) (y:ys) = x:y:merge 1 xs ys
+bogoSort' :: Ord b => Int -> [b] -> RState [b]
+bogoSort' 0 xs          = get >>= \gen -> put (execState rand gen) >> return xs
+bogoSort' 1 xs          = get >>= \gen -> put (execState rand gen) >> return xs
+bogoSort' a xs@(_:_:_)  = get >>= \gen ->
+                             let (n, gen')      = runState (randR (0, a)) gen
+                                 (r, gen'')     = runState (randR (False, True)) gen
+                                 (left, right)  = splitAt n xs
+                                 sleft          = evalState (bogoSort' n left) gen'
+                                 sright         = evalState (bogoSort' (a-n) right) gen''
+                             in put gen'' >> return (merge r sleft sright)
+
+merge :: Bool -> [a] -> [a] -> [a]
+merge _ [] [] = []
+merge _ xs [] = xs
+merge _ [] ys = ys
+merge t (x:xs) (y:ys) | not t     =  y:x:merge t xs ys
+                      | otherwise =  x:y:merge t xs ys
 
 main :: IO ()
 main = getLine >>= \line -> case (reads line :: [([Int], String)]) of
