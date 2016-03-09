@@ -429,8 +429,8 @@ bogoSort xs = do gen <- get
                 sorted _        = True
 
 bogoSort' :: Ord a => Int -> [a] -> RState [a]
-bogoSort' 0 xs          = get >>= \gen -> put (execState rand gen) >> return xs
-bogoSort' 1 xs          = get >>= \gen -> put (execState rand gen) >> return xs
+bogoSort' 0 xs          = return xs
+bogoSort' 1 xs          = return xs
 bogoSort' a xs@(_:_:_)  = get >>= \gen ->
                              let (n, gen')      = runState (randR (0, a)) gen
                                  (r, gen'')     = runState (randR (False, True)) gen
