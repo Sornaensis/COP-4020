@@ -16,11 +16,11 @@ deque (Queue ([], ys))   = deque $ Queue (reverse ys, [])
 deque (Queue (x:xs, ys)) = (x, Queue (xs,ys))
 
 type QVal   = Maybe Int
-type QState = (Queue Int, QVal)
-type QStore = State QState ()
+type QState = Queue Int 
+type QStore = State QState QVal
 
 start :: QState
-start = (empty, Nothing)
+start = empty
 
 isEmpty :: Queue a -> Bool
 isEmpty (Queue ([], [])) = True
@@ -28,15 +28,17 @@ isEmpty _                = False
 
 runQueue :: QVal -> QStore
 runQueue Nothing  = 
-            do (q, _) <- get
+            do q <- get
                if isEmpty q 
-                 then put (q, Nothing)
+                 then return Nothing
                  else let (v, q') = deque q 
-                      in put (q', Just v) 
+                      in do put q' 
+                            return $ Just v
                
 runQueue (Just x) = 
-            do (q, _) <- get
-               put (enqueue x q, Nothing)
+            do q <- get
+               put (enqueue x q)
+               return Nothing
 
 main :: IO ()
 main = qmain start
@@ -45,12 +47,12 @@ main = qmain start
     qmain s = do line <- getLine
                  case line of
                      "quit" -> return ()
-                     "show" -> let (q,_) = s in print q >> qmain s
-                     "deq"  -> let s'@(q,v) = execState (runQueue Nothing) s
+                     "show" -> print s >> qmain s
+                     "deq"  -> let (v,q) = runState (runQueue Nothing) s
                                in case v of
-                                    Nothing -> putStrLn "empty queue" >> qmain s'
-                                    Just x  -> print x >> qmain s'
+                                    Nothing -> putStrLn "empty queue" >> qmain q
+                                    Just x  -> print x >> qmain q
                      _     -> case reads line :: [(Int, String)] of
                                  []          -> qmain s
-                                 ((x,_):_)   -> let s'@(q,_) = execState (runQueue $ Just x) s
-                                                in print q >> qmain s'
+                                 ((x,_):_)   -> let (_,q) = runState (runQueue $ Just x) s
+                                                in print q >> qmain q
