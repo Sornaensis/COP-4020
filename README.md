@@ -418,7 +418,8 @@ rand :: RState Int
 rand = do g <- get
           let (n, g') = random g :: (Int, StdGen) in put g' >> return n
 
---- | Polymorphic random number range, since the type of the range can be inferred by the type of the tupe that forms the range
+--- | Polymorphic random number range, since the type of the range 
+--- | can be inferred by the type of the tupe that forms the range
 randR :: Random a => (a, a) -> RState a
 randR r = do g <- get
              let (n, g') = randomR r g in put g' >> return n
@@ -427,7 +428,9 @@ randR r = do g <- get
 bogoSort :: (Show a, Ord a) => [a] -> RState [a]
 bogoSort xs = do gen <- get
                  put (execState rand gen)
-                 let sort = evalState (bogoSort' len xs) gen in if sorted sort then return sort else trace (show sort) $ bogoSort xs
+                 let sort = evalState (bogoSort' len xs) gen in if sorted sort 
+                                                                 then return sort 
+                                                                 else trace (show sort) $ bogoSort xs
                 where 
                 len             = length xs
                 sorted (x:y:xs) = (x <= y) && sorted (y:xs)
@@ -436,7 +439,7 @@ bogoSort xs = do gen <- get
 bogoSort' :: Ord a => Int -> [a] -> RState [a]
 bogoSort' 0 xs          = return xs
 bogoSort' 1 xs          = return xs
-bogoSort' a xs@(_:_:_)  = get >>= \gen0 -> put (execState rand gen0) >> get >>= \gen ->
+bogoSort' a xs@(_:_:_)  = get >>= \gen1 -> put (execState rand gen0) >> get >>= \gen ->
                              let n              = evalState (randR (0, a)) gen
                                  (left, right)  = splitAt n xs
                                  sleft          = evalState (bogoSort' n left) gen
