@@ -16,6 +16,8 @@ main =
  where
  newMain :: InputT IO ()
  newMain =
+  handle (\Interrupt -> outputStrLn "Exiting..") 
+  $ withInterrupt $
   getInputLine "expr> "
   >>= \ln -> 
      case ln of
