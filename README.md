@@ -97,6 +97,18 @@ Then second
 (4+5)
 ```
 
+Lambdas can only take single arguments but sometimes we write functions that take multiple parameters
+```
+λfgx.fxg
+```
+This lambda is a short hand way to write out the following expression.
+```
+λf.λg.λx.fxg
+(λf.(λg.(λx.fxg))) -- Parentheses for clarity
+```
+
+This is also true in haskell. Haskell functions are said to be `'automatically-curried'` ([Currying](https://en.wikipedia.org/wiki/Currying)). That is, a function that takes more than one argument is transformed into a series of functions that each take a single argument internally. It's useful to think of haskell as an implementation of [Typed Lambda Calculus](https://en.wikipedia.org/wiki/Typed_lambda_calculus) in this way.
+
 [More Examples](/lambda-calc/LambdaCalc.hs)
 
  For the rest of this page I'll write lambdas in haskell syntax:
@@ -114,6 +126,7 @@ In haskell a lambda is just like any function and can take multiple values
 
 ```haskell
 ghci> let s = \x y -> x --- | Drop second parameter
+ghci> let s = \x _ -> x --- | Using wildcards is more idiomatic (Makes code easier to read)
 ```
 
 When we define a function we can think of the parameters in terms of creating a lambda expression that the function name is bound to. This is generally a good way to think about haskell functions because of the various ways of expressing partially applied functions.
@@ -210,8 +223,8 @@ So if we look at the first expression here we can turn each into a lambda and fi
 
 ```haskell
 (+ 3) ((/ 2) 10)
-(\a -> a + 3) ((\a -> a / 2) 10)
-((\a -> a / 2) 10) + 3
+(\a -> a + 3) ((\b -> b / 2) 10)  
+((\b -> b / 2) 10) + 3
 (10 / 2) + 3
 5 + 3
 8
