@@ -1,4 +1,4 @@
-module TermLanguage where
+module Main (main) where
 
 --- | Original code taken from: http://www.willamette.edu/~fruehr/haskell/evolution.html
 --- | Modified by Kyle Jones for COP-4020
@@ -21,7 +21,8 @@ main = do putStrLn "λλλ Lambda Language REPL. λλλ\nType 'quit' to exit."
           runInputT defaultSettings $ runEnv []
      where
      runEnv :: Env -> InputT IO ()
-     runEnv env = getInputLine "λ> " >>= \ln -> 
+     runEnv env = handle (\Interrupt -> outputStrLn "Exiting..") $ withInterrupt $
+                  getInputLine "λ> " >>= \ln -> 
                    case ln of
                     Nothing               -> runEnv env
                     Just "quit"           -> return ()
