@@ -3,6 +3,7 @@ module Lamb.Parser (ParseVal, doTerm) where
 
 import Lamb.Language
 import Text.ParserCombinators.Parsec hiding (spaces)
+-- import Debug.Trace
 
 type ParseVal = Either String Value
 type ParseRet = Parser (Either String Term)
@@ -67,7 +68,7 @@ parseFun = do
 --- | Syntax is... Whitespace! Or parentheses. f x == f (x) == f(x)
 parseApp :: Parser Term
 parseApp = do
-            fun   <- skipMany space >> (parseName <|> parens (parseApp <|> parseFun))
+            fun   <- skipMany space >> (parseName <|> parens (parseApp <|> parseFun) <|> try parseFloat <|> parseInt)
             lhs   <- many app
             --- | Function application is left associative
             return $ case lhs of
@@ -92,11 +93,12 @@ parseLambda = letexp <|> parseTerm
             
 
 parseTerm :: Parser Term
-parseTerm = parseFun <|> try parseFloat <|> parseInt <|> parseApp <|> parens parseTerm
+parseTerm = parseApp <|> parseFun <|> try parseFloat <|> parseInt <|>  parens parseTerm
 
 doTerm :: Env -> String -> ParseVal
 doTerm env s = case parse parseLambda "" s of
             Left err  -> Left $ unwords . lines $ show err
-            Right val -> case val of
+            Right val -> -- trace (show val) $
+                         case val of
                             (Rec n _) -> Right $ Let n (eval env val)
                             _         -> Right $ eval env val

@@ -14,9 +14,9 @@ data Term = Use Var
           | Lit TNum
           | App Term Term
           | Abs Var  Term
-          | Rec Var  Term
+          | Rec Var  Term deriving (Show)
 
-data TNum = Int Integer | Real Double
+data TNum = Int Integer | Real Double deriving (Show)
 
 tnum2int :: TNum -> Integer
 tnum2int (Int n)  = n
