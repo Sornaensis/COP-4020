@@ -6,7 +6,7 @@ This project depends on third party libraries to work correctly. Please go [here
 
 #### About
 
-Lambda expression language parser/evaluator written in haskell with Parsec. The internal language representation is based on one of the factorial programs taken from [this page](http://www.willamette.edu/~fruehr/haskell/evolution.html) that implemented a simple interpreted language to represent the factorial function. I used another one in the file [factorial.hs](factorial.hs) as an example program.
+Lambda expression language parser/evaluator written in haskell with Parsec. The internal language representation is based on one of the factorial programs taken from [this page](http://www.willamette.edu/~fruehr/haskell/evolution.html) that implemented a simple interpreted language to represent the factorial function. I used another one in the file [factorial.ls](factorial.ls) as an example program.
 
 Everything is written as lambda expressions but you can bind these expressions to names in the `REPL`
 
