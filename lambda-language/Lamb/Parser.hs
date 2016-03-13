@@ -13,11 +13,18 @@ spaces = skipMany1 space
 symbol :: Parser Char
 symbol = oneOf ";:,./\'~!@#$%^&*><?|-+="
 
-parseLit :: Parser Term
-parseLit = do
+parseFloat :: Parser Term
+parseFloat = do h <- many1 digit
+                d <- char '.'
+                l <- many1 digit
+                return $ case reads (h ++ [d] ++ l) of
+                            ((n,""):_) -> Lit . Real $ n
+
+parseInt :: Parser Term
+parseInt = do
             num  <- many1 digit
             return $ case reads num of
-                            ((n,""):_) -> Lit n
+                            ((n,""):_) -> Lit . Int $ n
 
 parseId  :: Parser Term
 parseId  = do
@@ -67,7 +74,7 @@ parseApp = do
                       (h:hs) -> foldl App (App fun h) hs 
                       []     -> fun
             where
-            app = (skipMany space >> (parseLit <|> parseName <|> parens parseTerm)) <|> parens parseTerm
+            app = (skipMany space >> (try parseFloat <|> parseInt <|> parseName <|> parens parseTerm)) <|> parens parseTerm
 
 --- | Name a function with let <name> = <expr> syntax
 parseLambda :: Parser Term
@@ -85,7 +92,7 @@ parseLambda = letexp <|> parseTerm
             
 
 parseTerm :: Parser Term
-parseTerm = parseFun <|> parseLit <|> parseApp <|> parens parseTerm
+parseTerm = parseFun <|> try parseFloat <|> parseInt <|> parseApp <|> parens parseTerm
 
 doTerm :: Env -> String -> ParseVal
 doTerm env s = case parse parseLambda "" s of

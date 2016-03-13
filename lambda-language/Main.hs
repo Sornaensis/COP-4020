@@ -3,8 +3,6 @@ module Main (main) where
 --- | Original code taken from: http://www.willamette.edu/~fruehr/haskell/evolution.html
 --- | Modified by Kyle Jones for COP-4020
 
--- a dynamically-typed term language
-
 import Control.Monad.IO.Class
 import Data.Char (isSpace)
 import Lamb.Parser
@@ -24,8 +22,9 @@ main = do putStrLn "λλλ Lambda Language REPL. λλλ\nType 'quit' to exit."
      runEnv env = handle (\Interrupt -> outputStrLn "Exiting..") $ withInterrupt $
                   getInputLine "λ> " >>= \ln -> 
                    case ln of
-                    Nothing               -> runEnv env
+                    Nothing               -> return ()
                     Just "quit"           -> return ()
+                    Just []               -> runEnv env
                     Just (':':'l':' ':fn) -> liftIO (readFile (trim fn)) >>= \c -> (runEnv . procEnv env . lines) c 
                     Just str              -> case doTerm env (trim str) of
                                               Left err  -> outputStrLn err >> runEnv env
