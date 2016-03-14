@@ -32,7 +32,7 @@ type Var  = String
 
 data Value = Num TNum
            | Bool Bool
-           | Fun (Value -> Value)
+           | Fun (Value -> TError Value)
            | Let String Value --- | Tacked on for repl
 
 instance Show Value where
@@ -43,9 +43,11 @@ instance Show Value where
   show (Let n _) = n ++ " :: Value -> Value"
   show  _  = ""
 
-prjFun :: Value -> Value -> Value
-prjFun (Fun f) = f
-prjFun  _      = error "bad function value"
+prjFun :: Value -> TError Value -> TError Value
+prjFun (Fun f) = \i -> case i of
+                        l@(Left _) -> l
+                        (Right v)  -> f v
+prjFun  _      = \_ -> throwError "bad function value"
 
 prjReal :: Value -> Double
 prjReal (Num n) = tnum2double n
@@ -66,10 +68,17 @@ prjBool  _       = error "bad boolean value"
 
 -- environments mapping variables to values
 
+type TError = Either String
+
+throwError :: String -> TError a
+throwError = Left
+
 type Env = [(Var, Value)]
 
-getval :: Var -> Env -> Value
-getval x env = fromMaybe (error ("no value for " ++ x)) (lookup x env) 
+getval :: Var -> Env -> TError Value
+getval x env = case lookup x env of
+                Just val  -> return val
+                Nothing   -> throwError $ "No value for " ++ show x
 
 hasval :: Var -> Env -> Bool
 hasval x env = case lookup x env of
@@ -82,28 +91,44 @@ define x v (e@(n,v1):es) = if x == n then (x,v) : es else e : define x v es
 
 -- an environment-based evaluation function
 
-eval :: Env -> Term -> Value
+eval :: Env -> Term -> TError Value
 eval env (Use c)   = if hasval c env then getval c env else getval c prims
-eval env (Lit k)   = Num k
-eval env (App m n) = prjFun (eval env m) (eval env n)
-eval env (Abs x m) = Fun  (\v -> eval ((x,v) : env) m)
-eval env (Rec x m) = f where f = eval ((x,f) : env) m
-
+eval env (Lit k)   = return $ Num k
+eval env (App m n) = case eval env m of
+                        l@(Left _) -> l 
+                        (Right i)  -> case eval env n of
+                                        l@(Left _)  -> l
+                                        j           -> prjFun i j
+eval env (Abs x m) = return $ Fun (\v -> eval ((x,v) : env) m)
+eval env (Rec x m) = f 
+                    where 
+                    f = case f' of 
+                         l@(Left _)  -> l
+                         (Right f'')  -> eval ((x,f'') : env) m
+                    f' = eval env m
+                                       
 
 -- a (fixed) "environment" of language primitives
 
-binOp f f' = Fun (\i -> Fun (\j -> case i of
-                                 (Num (Real _)) -> (Num . Real) $ f' (prjReal i) (prjReal j)
-                                 _              -> case j of
-                                                    (Num (Real _)) -> (Num . Real) $ f' (prjReal i) . prjReal $ j
-                                                    _              -> (Num . Int)  $ f (prjInt i) . prjInt $ j))
+binOp inj f inj' f' = 
+    Fun (\i -> return $ 
+      Fun (\j -> return $ case i of
+           (Num (Real _)) -> inj' $ f' (prjReal i) (prjReal j)
+           _              -> case j of
+                              (Num (Real _)) -> inj' $ f' (prjReal i) . prjReal $ j
+                              _              -> inj  $ f (prjInt i) . prjInt $ j))
 
-times    = binOp (*) (*)
-divide   = binOp div (/)
-minus    = binOp (-) (-)
-plus     = binOp (+) (+)
-equal    = Fun (\i -> Fun $ Bool . (==) (prjBool i) . prjBool )
-cond     = Fun (\b -> Fun (\x -> Fun (\y -> if prjBool b then x else y)))
+toReal = Num . Real
+toInt  = Num . Int
+
+numOp f = binOp toInt f toReal
+
+times    = numOp (*) (*)
+divide   = numOp div (/)
+minus    = numOp (-) (-)
+plus     = numOp (+) (+)
+equal    = binOp Bool (==) Bool (==)
+cond     = Fun (\b -> return $ Fun (\x -> return $ Fun (\y -> return $ if prjBool b then x else y)))
 
 prims :: Env
 prims = [ ("+",plus),

@@ -100,5 +100,9 @@ doTerm env s = case parse parseLambda "" s of
             Left err  -> Left $ unwords . lines $ show err
             Right val -> -- trace (show val) $
                          case val of
-                            (Rec n _) -> Right $ Let n (eval env val)
-                            _         -> Right $ eval env val
+                            (Rec n _) -> case eval env val of
+                                            Left err -> Left err
+                                            Right v  -> Right $ Let n v
+                            _         -> case eval env val of
+                                            Left err -> Left err
+                                            Right v  -> Right v
