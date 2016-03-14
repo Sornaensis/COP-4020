@@ -1,12 +1,11 @@
 --- | Simple parser for turning lambda expressions (plus operators and numbers, into terms)
-module Lamb.Parser (ParseVal, doTerm) where
+module Lamb.Parser (ParseVal, runLambParser) where
 
 import Lamb.Language
 import Text.ParserCombinators.Parsec hiding (spaces)
--- import Debug.Trace
 
+-- | This is the type we return from `runLambParser`
 type ParseVal = Either String Term
-type ParseRet = Parser (Either String Term)
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -95,7 +94,7 @@ parseLambda = letexp <|> parseTerm
 parseTerm :: Parser Term
 parseTerm = parseApp <|> parseFun <|> try parseFloat <|> parseInt <|>  parens parseTerm
 
-doTerm :: String -> ParseVal
-doTerm s = case parse parseLambda "" s of
+runLambParser :: String -> ParseVal
+runLambParser s = case parse parseLambda "" s of
             Left err  -> Left $ unwords . lines $ show err
             Right val -> Right val
