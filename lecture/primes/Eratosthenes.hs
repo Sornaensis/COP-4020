@@ -1,6 +1,7 @@
 module Eratosthenes where
 
+--- | ghci> take 500 sieve
 sieve :: [Integer]
-sieve  = sieve' 2 [2..n]
-        where
-        sieve' n (x:xs) = 
+sieve = strip [2..]
+      where
+      strip (x:xs) = x : strip (filter ((/=) 0 . (`mod`x)) xs)
