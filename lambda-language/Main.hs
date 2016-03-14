@@ -5,6 +5,7 @@ module Main (main) where
 
 import Control.Monad.IO.Class
 import Data.Char (isSpace)
+import Debug.Trace
 import Lamb.Parser
 import Lamb.Language
 import System.Console.Haskeline
@@ -26,16 +27,23 @@ main = do putStrLn "λλλ Lambda Language REPL. λλλ\nType 'quit' to exit."
                     Just "quit"           -> return ()
                     Just []               -> runEnv env
                     Just (':':'l':' ':fn) -> liftIO (readFile (trim fn)) >>= \c -> (runEnv . procEnv env . lines) c 
-                    Just str              -> case doTerm env (trim str) of
+                    Just str              -> case doTerm (trim str) of
                                               Left err  -> outputStrLn err >> runEnv env
-                                              Right ret -> case ret of
-                                                          (Let n f) -> runEnv $ define n f env
-                                                          _         -> (outputStrLn . show) ret >> runEnv env
+                                              Right ret -> outputStrLn (show ret) >>
+                                                         case ret of
+                                                          (Rec n f) -> case eval env ret of
+                                                                         Right v -> runEnv $ define n v env
+                                                                         Left e  -> outputStrLn e >> runEnv env
+                                                          _         -> case eval env ret of
+                                                                        Right v -> (outputStrLn . show) v >> runEnv env
+                                                                        Left e  -> outputStrLn e >> runEnv env
                 where 
                 procEnv env []     = env
-                procEnv env (x:xs) = case (doTerm env . trim) x of
-                                        Right (Let n f) -> procEnv (define n f env) xs
-                                        Right _         -> procEnv env xs
+                procEnv env (x:xs) = case (doTerm . trim) x of
+                                        Right t@(Rec n f) -> case eval env t of
+                                                                Right v -> procEnv (define n v env) xs
+                                                                _       -> procEnv env xs
+                                        _               -> procEnv env xs
                                                                   
 
 dropFromTailWhile _ [] = []

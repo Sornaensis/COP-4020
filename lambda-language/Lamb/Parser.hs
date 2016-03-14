@@ -5,7 +5,7 @@ import Lamb.Language
 import Text.ParserCombinators.Parsec hiding (spaces)
 -- import Debug.Trace
 
-type ParseVal = Either String Value
+type ParseVal = Either String Term
 type ParseRet = Parser (Either String Term)
 
 spaces :: Parser ()
@@ -95,14 +95,7 @@ parseLambda = letexp <|> parseTerm
 parseTerm :: Parser Term
 parseTerm = parseApp <|> parseFun <|> try parseFloat <|> parseInt <|>  parens parseTerm
 
-doTerm :: Env -> String -> ParseVal
-doTerm env s = case parse parseLambda "" s of
+doTerm :: String -> ParseVal
+doTerm s = case parse parseLambda "" s of
             Left err  -> Left $ unwords . lines $ show err
-            Right val -> -- trace (show val) $
-                         case val of
-                            (Rec n _) -> case eval env val of
-                                            Left err -> Left err
-                                            Right v  -> Right $ Let n v
-                            _         -> case eval env val of
-                                            Left err -> Left err
-                                            Right v  -> Right v
+            Right val -> Right val

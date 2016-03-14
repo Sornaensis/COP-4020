@@ -73,6 +73,9 @@ type TError = Either String
 throwError :: String -> TError a
 throwError = Left
 
+extract :: TError a -> a
+extract (Right n) = n
+
 type Env = [(Var, Value)]
 
 getval :: Var -> Env -> TError Value
@@ -100,12 +103,19 @@ eval env (App m n) = case eval env m of
                                         l@(Left _)  -> l
                                         j           -> prjFun i j
 eval env (Abs x m) = return $ Fun (\v -> eval ((x,v) : env) m)
-eval env (Rec x m) = f 
-                    where 
-                    f = case f' of 
+eval env (Rec x m) = case eval ((x,Fun return):env) m of 
                          l@(Left _)  -> l
-                         (Right f'')  -> eval ((x,f'') : env) m
-                    f' = eval env m
+                         (Right _)  -> return f
+                   where 
+                   f = eval' ((x,f) : env) m
+
+--- | Lazy evaluation
+eval' :: Env -> Term -> Value
+eval' env (Use c)    = if hasval c env then extract $ getval c env else extract $ getval c prims
+eval' env (Lit k)    = Num k
+eval' env (App m n)  = extract $ prjFun (eval' env m) (Right $ eval' env n)
+eval' env (Abs x m)  = Fun (\v -> return $ eval' ((x,v) : env) m)
+eval' env (Rec x m)  = f where f = eval' ((x,f) : env) m
                                        
 
 -- a (fixed) "environment" of language primitives
