@@ -8,7 +8,9 @@ module Lamb.Language ( Env
 --- | Original code taken from: http://www.willamette.edu/~fruehr/haskell/evolution.html
 --- | Modified by Kyle Jones for COP-4020
 
+import Control.Monad
 import Data.Maybe
+import Data.Either
 
 data Term = Use Var
           | Lit TNum
@@ -47,24 +49,24 @@ prjFun :: Value -> TError Value -> TError Value
 prjFun (Fun f) = \i -> case i of
                         l@(Left _) -> l
                         (Right v)  -> f v
-prjFun  _      = \_ -> throwError "bad function value"
+prjFun  _      = \_ -> throwError "*** Error: Invalid function coercion"
 
-prjReal :: Value -> Double
-prjReal (Num n) = tnum2double n
-prjReal (Bool b)  = if b then 1 else 0
-prjReal _         = error "Invalid floating point value"
+prjReal :: Value -> TError Double
+prjReal (Num n) = return $ tnum2double n
+prjReal (Bool b)  = return $ if b then 1 else 0
+prjReal _         = throwError "*** Error: Invalid floating point value coercion"
 
-prjInt :: Value -> Integer
-prjInt (Num n)  = tnum2int n
-prjInt (Bool b) = if b then 1 else 0
-prjInt  _       = error "bad integer value"
+prjInt :: Value -> TError Integer
+prjInt (Num n)  = return $ tnum2int n
+prjInt (Bool b) = return $ if b then 1 else 0
+prjInt  _       = throwError "*** Error: Invalid integer value coercion"
 
-prjBool :: Value -> Bool
-prjBool (Bool b) = b
+prjBool :: Value -> TError Bool
+prjBool (Bool b) = return $ b
 prjBool (Num n)  = case n of 
-                    Int n  -> n /= 0
-                    Real d -> abs d > 1e-12
-prjBool  _       = error "bad boolean value"
+                    Int n  -> return $ n /= 0
+                    Real d -> return $ abs d > 1e-12
+prjBool  _       = throwError "*** Error: Invalid boolean value coercion"
 
 -- environments mapping variables to values
 
@@ -122,11 +124,29 @@ eval' env (Rec x m)  = f where f = eval' ((x,f) : env) m
 
 binOp inj f inj' f' = 
     Fun (\i -> return $ 
-      Fun (\j -> return $ case i of
-           (Num (Real _)) -> inj' $ f' (prjReal i) (prjReal j)
+      Fun (\j -> case i of
+           (Num (Real _)) -> let op1 = prjReal i
+                                 op2 = prjReal j
+                             in case op1 of
+                                    Left err -> throwError err
+                                    Right i' -> case op2 of
+                                                 Left err -> throwError err
+                                                 Right j' -> return . inj' $ f' i' j'
            _              -> case j of
-                              (Num (Real _)) -> inj' $ f' (prjReal i) . prjReal $ j
-                              _              -> inj  $ f (prjInt i) . prjInt $ j))
+                              (Num (Real _)) -> let op1 = prjReal i
+                                                    op2 = prjReal j
+                                                in case op1 of
+                                                       Left err -> throwError err
+                                                       Right i' -> case op2 of
+                                                                    Left err -> throwError err
+                                                                    Right j' -> return . inj' $ f' i' j'
+                              _              -> let op1 = prjInt i
+                                                    op2 = prjInt j
+                                                in case op1 of
+                                                       Left err -> throwError err
+                                                       Right i' -> case op2 of
+                                                                    Left err -> throwError err
+                                                                    Right j' -> return . inj $ f i' j'))
 
 toReal = Num . Real
 toInt  = Num . Int
@@ -138,7 +158,9 @@ divide   = numOp div (/)
 minus    = numOp (-) (-)
 plus     = numOp (+) (+)
 equal    = binOp Bool (==) Bool (==)
-cond     = Fun (\b -> return $ Fun (\x -> return $ Fun (\y -> return $ if prjBool b then x else y)))
+cond     = Fun (\b -> return $ Fun (\x -> return $ Fun (\y -> case prjBool b of
+                                                               Left err -> throwError err
+                                                               Right b' -> return $ if b' then x else y)))
 
 prims :: Env
 prims = [ ("+",plus),
