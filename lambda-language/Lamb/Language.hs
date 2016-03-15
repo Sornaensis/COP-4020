@@ -122,31 +122,23 @@ eval' env (Rec x m)  = f where f = eval' ((x,f) : env) m
 
 -- a (fixed) "environment" of language primitives
 
+isReal :: Value -> Bool
+isReal (Num (Real _)) = True
+isReal _              = False
+
 binOp inj f inj' f' = 
     Fun (\i -> return $ 
-      Fun (\j -> case i of
-           (Num (Real _)) -> let op1 = prjReal i
-                                 op2 = prjReal j
-                             in case op1 of
-                                    Left err -> throwError err
-                                    Right i' -> case op2 of
-                                                 Left err -> throwError err
-                                                 Right j' -> return . inj' $ f' i' j'
-           _              -> case j of
-                              (Num (Real _)) -> let op1 = prjReal i
-                                                    op2 = prjReal j
-                                                in case op1 of
-                                                       Left err -> throwError err
-                                                       Right i' -> case op2 of
-                                                                    Left err -> throwError err
-                                                                    Right j' -> return . inj' $ f' i' j'
-                              _              -> let op1 = prjInt i
-                                                    op2 = prjInt j
-                                                in case op1 of
-                                                       Left err -> throwError err
-                                                       Right i' -> case op2 of
-                                                                    Left err -> throwError err
-                                                                    Right j' -> return . inj $ f i' j'))
+      Fun (\j -> if isReal i || isReal j
+                  then apply prjReal inj' f' i j
+                  else apply prjInt  inj  f  i j))
+    where
+    apply p t f x y = let x' = p x
+                          y' = p y
+                      in case x' of
+                            Left err -> throwError err
+                            Right i' -> case y' of
+                                         Left err -> throwError err
+                                         Right j' -> return . t $ f i' j'
 
 toReal = Num . Real
 toInt  = Num . Int
