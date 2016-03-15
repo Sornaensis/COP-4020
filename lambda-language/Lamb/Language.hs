@@ -83,7 +83,7 @@ type Env = [(Var, Value)]
 getval :: Var -> Env -> TError Value
 getval x env = case lookup x env of
                 Just val  -> return val
-                Nothing   -> throwError $ "*** Error: `" ++ show x ++ "` not defined"
+                Nothing   -> throwError $ "*** Error: `" ++ x ++ "` not defined"
 
 hasval :: Var -> Env -> Bool
 hasval x env = case lookup x env of
