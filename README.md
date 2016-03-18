@@ -452,7 +452,7 @@ bogoSort xs = do gen <- get
 bogoSort' :: Ord a => Int -> [a] -> RState [a]
 bogoSort' 0 xs          = return xs
 bogoSort' 1 xs          = return xs
-bogoSort' a xs@(_:_:_)  = get >>= \gen1 -> put (execState rand gen0) >> get >>= \gen ->
+bogoSort' a xs@(_:_:_)  = get >>= \gen0 -> put (execState rand gen0) >> get >>= \gen ->
                              let n              = evalState (randR (0, a)) gen
                                  (left, right)  = splitAt n xs
                                  sleft          = evalState (bogoSort' n left) gen
