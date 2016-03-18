@@ -462,7 +462,6 @@ bogoSort' a xs@(_:_:_)  = get >>= \gen0 -> put (execState rand gen0) >> get >>= 
 
 --- | Conditional merging
 merge :: Bool -> [a] -> [a] -> [a]
-merge _ [] [] = []
 merge _ xs [] = xs
 merge _ [] ys = ys
 merge t (x:xs) (y:ys) | not t     =  y:x:merge t xs ys
