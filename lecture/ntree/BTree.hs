@@ -32,6 +32,11 @@ instance Foldable Tree where --- | Foldr takes, for example, a list [1,2,3,4] an
     length Nil              = 0
     length (Node l _ r)     = 1 + length l + length r
 
+insTree :: Ord a => Tree a -> a -> Tree a
+insTree Nil x          = Leaf x
+insTree (Leaf x) y     = if y > x then Node Nil x (Leaf y) else Node (Leaf y) x Nil
+insTree (Node l x r) y = if y > x then Node l x (insTree r y) else Node (insTree l y) x r
+
 instance Show a => Show (Tree a) where
     show = showtree
 

@@ -10,17 +10,18 @@ tryParsers xs = foldr1 (<|>) . map try $ xs
 spaced :: Parser a -> Parser a
 spaced = between (many space) (many space) 
 
+infixExp :: Parser Expr -> [(String, Expr -> Expr -> Expr)] -> Parser Expr
+infixExp next [] = undefined
+infixExp next ps = do t1 <- next
+                      t2 <- spaced . option "" . tryParsers $ map (string . fst) ps
+                      case lookup t2 ps of
+                        Nothing -> return t1
+                        Just cons -> do follow <- next
+                                        many space
+                                        return $ cons t1 follow
+
 equalTerm :: Parser Expr
-equalTerm = do t1 <- orTerm
-               next <- spaced . option "" . tryParsers $ [string "==" , string "/="]
-               case next of
-                 []   -> return t1
-                 "==" -> do follow <- equalTerm
-                            many space
-                            return $ Eq t1 follow
-                 "/=" -> do follow <- equalTerm
-                            many space
-                            return $ Neq t1 follow
+equalTerm = infixExp orTerm [("==",Eq),("!=",Neq)]
 
 orTerm :: Parser Expr
 orTerm = do t1 <- andTerm

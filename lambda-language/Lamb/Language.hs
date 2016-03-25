@@ -14,6 +14,7 @@ import Data.Either
 
 data Term = Use Var
           | Lit TNum
+          | TLit Value
           | App Term Term
           | Abs Var  Term
           | Rec Var  Term deriving (Show)
@@ -99,6 +100,7 @@ define x v (e@(n,v1):es) = if x == n then (x,v) : es else e : define x v es
 eval :: Env -> Term -> TError Value
 eval env (Use c)   = if hasval c env then getval c env else getval c prims
 eval env (Lit k)   = return $ Num k
+eval env (TLit v)  = return v
 eval env (App m n) = case eval env m of
                         l@(Left _) -> l 
                         (Right i)  -> case eval env n of
@@ -115,6 +117,7 @@ eval env (Rec x m) = case eval ((x,Fun return):env) m of
 eval' :: Env -> Term -> Value
 eval' env (Use c)    = if hasval c env then extract $ getval c env else extract $ getval c prims
 eval' env (Lit k)    = Num k
+eval' env (TLit v)   = v
 eval' env (App m n)  = extract $ prjFun (eval' env m) (Right $ eval' env n)
 eval' env (Abs x m)  = Fun (\v -> return $ eval' ((x,v) : env) m)
 eval' env (Rec x m)  = f where f = eval' ((x,f) : env) m
@@ -160,6 +163,7 @@ prims = [ ("+",plus),
           ("/", divide),
           ("-", minus), 
           ("==", equal), 
-          ("if", cond), 
-          ("True", Bool True),
-          ("False", Bool False)]
+          ("if", cond)
+        ]
+          -- ("True", Bool True),
+          -- ("False", Bool False)]

@@ -1,6 +1,7 @@
 --- | Simple parser for turning lambda expressions (plus operators and numbers, into terms)
 module Lamb.Parser (ParseVal, runLambParser) where
 
+import Control.Monad
 import Lamb.Language
 import Text.ParserCombinators.Parsec hiding (spaces)
 
@@ -19,7 +20,9 @@ parseFloat = do h <- many1 digit
                 l <- many1 digit
                 return $ case reads (h ++ [d] ++ l) of
                             ((n,""):_) -> Lit . Real $ n
-
+parseBool :: Parser Term
+parseBool = fmap (TLit . Bool . read) $ string "True" <|> string "False"
+ 
 parseInt :: Parser Term
 parseInt = do
             num  <- many1 digit
@@ -36,7 +39,7 @@ parseId  = do
 parseName :: Parser Term
 parseName = do
              name <- (do
-                        f <- letter 
+                        f <- oneOf ['a'..'z'] 
                         ls <- many (letter <|> digit)
                         return $ f:ls) <|> many1 symbol
              return $ Use name
@@ -67,14 +70,14 @@ parseFun = do
 --- | Syntax is... Whitespace! Or parentheses. f x == f (x) == f(x)
 parseApp :: Parser Term
 parseApp = do
-            fun   <- skipMany space >> (parseName <|> parens (parseApp <|> parseFun) <|> try parseFloat <|> parseInt)
+            fun   <- skipMany space >> (parseName <|> parens (parseApp <|> parseFun) <|> parseBool <|> try parseFloat <|> parseInt)
             lhs   <- many app
             --- | Function application is left associative
             return $ case lhs of
                       (h:hs) -> foldl App (App fun h) hs 
                       []     -> fun
             where
-            app = (skipMany space >> (try parseFloat <|> parseInt <|> parseName <|> parens parseTerm)) <|> parens parseTerm
+            app = (skipMany space >> (try parseFloat <|> parseBool <|> parseInt <|> parseName <|> parens parseTerm)) <|> parens parseTerm
 
 --- | Name a function with let <name> = <expr> syntax
 parseLambda :: Parser Term
@@ -92,7 +95,7 @@ parseLambda = letexp <|> parseTerm
             
 
 parseTerm :: Parser Term
-parseTerm = parseApp <|> parseFun <|> try parseFloat <|> parseInt <|>  parens parseTerm
+parseTerm = parseApp <|> parseFun <|> parseBool <|> try parseFloat <|> parseInt <|>  parens parseTerm
 
 runLambParser :: String -> ParseVal
 runLambParser s = case parse parseLambda "" s of
