@@ -67,6 +67,10 @@ shapesList = [ SB $ Rectangle { height = sqrt pi, width = sqrt pi}
                           (-1,0), (-sqrt(3)/2, 1/2), (-sqrt(2)/2,sqrt(2)/2), (-1/2,sqrt(3)/2)] }
              ]
 
+--- Try:
+-- | ghci> map area shapesList
+-- | ghci> shapesList
+-- | ghci> totalArea shapesList
 
 
 
