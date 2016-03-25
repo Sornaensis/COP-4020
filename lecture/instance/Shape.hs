@@ -45,7 +45,7 @@ instance Shape Polygon where
 
 -- If we want to get the areas of a bunch of different shapes we need to be able to 
 -- store them in a list and they must all agree on what type their area function returns
-totalArea :: (Floating a) => [SB a] -> a
+totalArea :: (Num a) => [SB a] -> a
 totalArea = sum . map area  
 
 --- | The Shape Box container datatype. Notice the triple class constraint
@@ -71,6 +71,5 @@ shapesList = [ SB $ Rectangle { height = sqrt pi, width = sqrt pi}
 -- | ghci> map area shapesList
 -- | ghci> shapesList
 -- | ghci> totalArea shapesList
-
 
 
